@@ -1,9 +1,9 @@
 from torch import nn
 import torch
 from torch.utils.data import Dataset, DataLoader
-from shuffling.dataset import create_playlist_dataset, PlaylistDataset
-from shuffling.neuralsort import NeuralSort
-from shuffling.softsort import SoftSort
+from deep_shuffling.dataset import create_playlist_dataset, PlaylistDataset
+from deep_shuffling.neuralsort import NeuralSort
+from deep_shuffling.softsort import SoftSort
 import matplotlib.pyplot as plt
 import matplotlib
 

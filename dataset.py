@@ -14,6 +14,8 @@ npr.seed(1337)
 
 
 class PlaylistDataset(Dataset):
+    constant = "constant"
+    must_vary = "must_vary"
 
     def __init__(self, data: list[dict]):
         self.data = data
@@ -30,8 +32,8 @@ class PlaylistDataset(Dataset):
 
 
 def create_track_dict(artist_one_hot, energy = torch.tensor(0, device=device), modern = torch.tensor(0, device=device)):
-    return {"constant": torch.stack([energy, modern]),
-     "must_vary": artist_one_hot}
+    return {PlaylistDataset.constant: torch.stack([energy, modern]),
+            PlaylistDataset.must_vary: artist_one_hot}
 
 
 def create_pad_track(n_artists: int):
@@ -77,7 +79,7 @@ def create_playlist(maximum_playlist_length: int, n_tracks: int=512, n_artists: 
     mask[:n_tracks] = [False]*n_tracks
     mask = torch.tensor(mask, device=device)
     playlist_dict = {}
-    for field in ["constant", "must_vary"]:
+    for field in [PlaylistDataset.constant, PlaylistDataset.must_vary]:
         d = {}
         l = [t[field] for t in playlist]
         d[field] = torch.stack(l)
