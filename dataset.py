@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 energy_range = (1,10)
 modern_range = (1,10)
 
-device = torch.device('cuda')
+device = torch.device('cpu')
 torch.cuda.manual_seed(1337)
 torch.random.manual_seed(1337)
 npr.seed(1337)

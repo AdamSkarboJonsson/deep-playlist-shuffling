@@ -2,11 +2,10 @@ import torch
 from torch import Tensor, tensor
 import torch.nn as nn
 import numpy as np
-from deep_shuffling.dataset import create_playlist, PlaylistDataset
-
+from dataset import create_playlist, PlaylistDataset
+import os
 # state space: Playlist (n*d)
-
-device = torch.device("cuda")
+device = torch.device("cpu")
 maximum_playlist_length = 4
 n_tracks = 4
 feature_types = [PlaylistDataset.constant]
@@ -94,21 +93,23 @@ class PlaylistGame:
         return reward
 
 
-dp = DataPreparer(feature_types=feature_types,
-                  n_features_per_type=n_features_per_type,
-                  maximum_playlist_length=maximum_playlist_length,
-                  n_tracks=n_tracks)
+if __name__ == "__main__":
 
-rf = RewardFunction()
+    dp = DataPreparer(feature_types=feature_types,
+                      n_features_per_type=n_features_per_type,
+                      maximum_playlist_length=maximum_playlist_length,
+                      n_tracks=n_tracks)
 
-random_playlist_tensor = dp.random_playlist_tensor()
-print(random_playlist_tensor)
+    rf = RewardFunction()
 
-playlist_game = PlaylistGame(dp=dp, reward_function=rf)
+    random_playlist_tensor = dp.random_playlist_tensor()
+    print(random_playlist_tensor)
 
-initial_state = playlist_game.get_initial_state()
-print(initial_state)
+    playlist_game = PlaylistGame(dp=dp, reward_function=rf)
 
-test_action = tensor([[0, 3]], device=device)
-new_state, reward = playlist_game.get_new_state_reward(state=initial_state, action=test_action)
-print(new_state)
+    initial_state = playlist_game.get_initial_state()
+    print(initial_state)
+
+    test_action = tensor([[0, 3]], device=device)
+    new_state, reward = playlist_game.get_new_state_reward(state=initial_state, action=test_action)
+    print(new_state)

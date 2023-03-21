@@ -3,12 +3,12 @@ from torch import Tensor, tensor
 import torch.nn as nn
 import torch
 import random
-from deep_shuffling.deep_q_learning.env import DataPreparer, PlaylistGame, RewardFunction
+from deep_q_learning.env import DataPreparer, PlaylistGame, RewardFunction
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
-device = torch.device("cuda")
+device = torch.device("cpu")
 class ReplayMemory:
 
     def __init__(self, capacity):
@@ -61,7 +61,8 @@ class ShuffleNet(nn.Module):
         # values (B, n_tracks)
         return values
 
-    def pick_best_action(self, values: Tensor):
+    def pick_best_action(self, state: Tensor) -> Tensor:
+        values = self.forward(state=state)
         # values (B, n_tracks)
         # best action are the indicies of the two largest output elements
         sorted_indicies = torch.argsort(input=values, dim=-1, descending=True)
@@ -69,8 +70,26 @@ class ShuffleNet(nn.Module):
         # action (B, 2)
         return action
 
-    def epsilon_greedy(self, state: Tensor):
-        
+    def pick_random_action(self, state: Tensor) -> Tensor:
+        B, n_tracks, _ = state.shape
+
+        # pick first track index
+        first_i = torch.randint(low=0, high=n_tracks, size=(B,1))
+
+        # pick second index, but not equal to first index, using modulo tricks
+        second_i = torch.remainder(first_i + torch.randint(low=1, high=n_tracks, size=(B,1)), n_tracks)
+
+        action = torch.cat((first_i, second_i))
+        return action
+
+    def epsilon_greedy(self, state: Tensor, epsilon) -> Tensor:
+        B, n_tracks, _ = state.shape
+        random_mask: Tensor = tensor(map(lambda x: x < epsilon, torch.rand(B,1)))
+        actions = tensor(map(lambda s, choice: self.pick_random_action(state=s) if choice else self.pick_best_action(state=s),
+                             zip(state, random_mask)))
+        return actions
+
+
 
 
 
