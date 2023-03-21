@@ -34,6 +34,7 @@ class DataPreparer:
             tensors=[playlist[feature_type][:, :n_features_per_type] for feature_type in feature_types])
         return playlist_tensor
 
+
 # only works for constant features atm
 class RewardFunction:
     def __init__(self):
@@ -44,7 +45,7 @@ class RewardFunction:
         shifted_features = torch.roll(state, -1, -2)
         pooling = self.avg_pooling(state)
         noise_squared_diff = (state[:, :-1, :] - shifted_features[:, :-1, :]) ** 2
-        noise_loss = torch.sum(noise_squared_diff)**0.5
+        noise_loss = torch.sum(noise_squared_diff) ** 0.5
         pooling_squared_diff = (pooling - avg_feats) ** 2
         global_level_loss = torch.sum(pooling_squared_diff)
         state_score = -(noise_loss + global_level_loss)
@@ -53,8 +54,8 @@ class RewardFunction:
     def get_reward(self, state: Tensor, action: Tensor, new_state: Tensor):
         current_state_score = self.get_state_score(state)
         new_state_score = self.get_state_score(new_state)
-        reward = new_state_score-current_state_score
-        reward = torch.reshape(reward, shape=(1,1))
+        reward = new_state_score - current_state_score
+        reward = torch.reshape(reward, shape=(1, 1))
         return reward
 
 
@@ -74,10 +75,10 @@ class PlaylistGame:
         assert state.shape == (1, self.dp.n_tracks, self.dp.n_features_per_type)
         i, j = action[0, :]
         permutation_matrix = torch.eye(self.dp.n_tracks, device=device)
-        permutation_matrix[i,i] = 0
-        permutation_matrix[i,j] = 1
-        permutation_matrix[j,j] = 0
-        permutation_matrix[j,i] = 1
+        permutation_matrix[i, i] = 0
+        permutation_matrix[i, j] = 1
+        permutation_matrix[j, j] = 0
+        permutation_matrix[j, i] = 1
         state_batchless = state[0, :, :]
         new_state_batchless = permutation_matrix @ state_batchless
         new_state = torch.unsqueeze(new_state_batchless, dim=0)
@@ -92,13 +93,13 @@ class PlaylistGame:
 
         return reward
 
+
 dp = DataPreparer(feature_types=feature_types,
                   n_features_per_type=n_features_per_type,
                   maximum_playlist_length=maximum_playlist_length,
                   n_tracks=n_tracks)
 
 rf = RewardFunction()
-
 
 random_playlist_tensor = dp.random_playlist_tensor()
 print(random_playlist_tensor)
@@ -108,8 +109,6 @@ playlist_game = PlaylistGame(dp=dp, reward_function=rf)
 initial_state = playlist_game.get_initial_state()
 print(initial_state)
 
-test_action = tensor([[0,3]], device=device)
-new_state, reward = playlist_game.get_new_state_reward(state=initial_state,action=test_action)
+test_action = tensor([[0, 3]], device=device)
+new_state, reward = playlist_game.get_new_state_reward(state=initial_state, action=test_action)
 print(new_state)
-
-
